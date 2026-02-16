@@ -1,0 +1,281 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f2f7f5;
+  --bg-elevated: #fbfdfc;
+  --surface: #ffffff;
+  --surface-2: #f5faf8;
+  --text: #122521;
+  --muted: #4f6c66;
+  --accent: #0f8a6a;
+  --accent-2: #0a6d54;
+  --ring: #4fd0ab;
+  --border: #cde3dc;
+  --shadow: 0 18px 46px -26px rgb(8 50 40 / 38%);
+  --header-glow: radial-gradient(circle at 15% 0%, rgb(79 208 171 / 26%), transparent 58%);
+}
+
+.dark {
+  --bg: #071513;
+  --bg-elevated: #0c1f1b;
+  --surface: #112723;
+  --surface-2: #16332c;
+  --text: #e8f8f1;
+  --muted: #9ac0b6;
+  --accent: #39b98d;
+  --accent-2: #80e3c1;
+  --ring: #5ddfb1;
+  --border: #21443b;
+  --shadow: 0 22px 54px -28px rgb(0 0 0 / 72%);
+  --header-glow: radial-gradient(circle at 12% 0%, rgb(93 223 177 / 18%), transparent 56%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: 'Avenir Next', 'Avenir', 'Trebuchet MS', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: linear-gradient(165deg, var(--bg) 0%, var(--bg-elevated) 72%);
+  @apply antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--header-glow);
+  z-index: -1;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lantern-sway-left {
+  0% { transform: rotate(-3deg); }
+  50% { transform: rotate(2deg); }
+  100% { transform: rotate(-3deg); }
+}
+
+@keyframes lantern-sway-center {
+  0% { transform: rotate(2deg); }
+  50% { transform: rotate(-2deg); }
+  100% { transform: rotate(2deg); }
+}
+
+@keyframes lantern-sway-right {
+  0% { transform: rotate(-2deg); }
+  50% { transform: rotate(3deg); }
+  100% { transform: rotate(-2deg); }
+}
+
+@layer components {
+  .ramadan-lanterns {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    opacity: 0.45;
+  }
+
+  .lantern {
+    position: absolute;
+    top: -8px;
+    width: 34px;
+    height: 96px;
+    transform-origin: top center;
+  }
+
+  .lantern::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 40px;
+    transform: translateX(-50%);
+    background: color-mix(in oklab, var(--border) 68%, var(--text) 32%);
+  }
+
+  .lantern::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 39px;
+    width: 30px;
+    height: 44px;
+    transform: translateX(-50%);
+    border-radius: 9px;
+    border: 1px solid color-mix(in oklab, var(--ring) 38%, var(--border) 62%);
+    background:
+      radial-gradient(circle at 50% 42%, color-mix(in oklab, var(--ring) 42%, transparent) 0%, transparent 62%),
+      linear-gradient(180deg, color-mix(in oklab, var(--surface) 78%, transparent) 0%, transparent 100%);
+    box-shadow: 0 0 18px -10px color-mix(in oklab, var(--ring) 64%, transparent);
+  }
+
+  .lantern-left {
+    left: 14%;
+    animation: lantern-sway-left 6.8s ease-in-out infinite;
+  }
+
+  .lantern-center {
+    left: 48%;
+    animation: lantern-sway-center 7.6s ease-in-out infinite;
+  }
+
+  .lantern-right {
+    right: 14%;
+    animation: lantern-sway-right 6.3s ease-in-out infinite;
+  }
+
+  @media (max-width: 640px) {
+    .lantern-left { left: 7%; }
+    .lantern-right { right: 7%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lantern-left,
+    .lantern-center,
+    .lantern-right {
+      animation: none;
+    }
+  }
+
+  .ui-card {
+    @apply rounded-3xl border p-5;
+    border-color: var(--border);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    box-shadow: var(--shadow);
+    animation: rise-in 240ms ease-out both;
+  }
+
+  .ui-card-soft {
+    @apply rounded-2xl border p-4;
+    border-color: var(--border);
+    background: color-mix(in oklab, var(--surface) 84%, transparent);
+  }
+
+  .ui-section-title {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em];
+    color: var(--muted);
+  }
+
+  .ui-icon-btn {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200;
+    color: var(--text);
+    border: 1px solid transparent;
+  }
+
+  .ui-icon-btn:hover {
+    border-color: var(--border);
+    background: color-mix(in oklab, var(--surface) 80%, var(--accent) 8%);
+  }
+
+  .ui-icon-btn:active {
+    transform: translateY(1px);
+  }
+
+  .ui-chip {
+    @apply inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-150;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: color-mix(in oklab, var(--surface) 82%, transparent);
+  }
+
+  .ui-chip-active {
+    border-color: color-mix(in oklab, var(--accent) 72%, white 12%);
+    color: white;
+    background: linear-gradient(145deg, var(--accent) 0%, var(--accent-2) 100%);
+    box-shadow: 0 10px 20px -15px color-mix(in oklab, var(--accent) 72%, black 20%);
+  }
+
+  .ui-primary-btn {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200;
+    color: white;
+    background: linear-gradient(145deg, var(--accent) 0%, var(--accent-2) 100%);
+    box-shadow: 0 12px 22px -18px color-mix(in oklab, var(--accent) 78%, black 22%);
+  }
+
+  .ui-primary-btn:hover {
+    filter: brightness(1.05);
+  }
+
+  .ui-primary-btn:active {
+    transform: translateY(1px);
+  }
+
+  .ui-secondary-btn {
+    @apply inline-flex items-center justify-center rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-200;
+    border-color: var(--border);
+    color: var(--text);
+    background: color-mix(in oklab, var(--surface) 82%, transparent);
+  }
+
+  .ui-secondary-btn:hover {
+    border-color: color-mix(in oklab, var(--accent) 46%, var(--border) 54%);
+    background: color-mix(in oklab, var(--surface) 74%, var(--accent) 10%);
+  }
+
+  .ui-input {
+    @apply w-full rounded-xl border px-3 py-2.5 text-sm outline-none;
+    border-color: var(--border);
+    color: var(--text);
+    background: color-mix(in oklab, var(--surface) 86%, transparent);
+  }
+
+  .ui-input::placeholder {
+    color: var(--muted);
+  }
+
+  .ui-input:focus-visible {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 22%, transparent);
+  }
+
+  .ui-progress {
+    @apply h-2 overflow-hidden rounded-full;
+    background: color-mix(in oklab, var(--surface) 45%, var(--bg) 55%);
+  }
+
+  .ui-progress > span {
+    @apply block h-full rounded-full transition-all duration-500;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--ring) 100%);
+  }
+
+  .ui-note {
+    @apply rounded-xl border px-3 py-2 text-xs;
+    border-color: color-mix(in oklab, var(--accent) 30%, var(--border) 70%);
+    color: var(--muted);
+    background: color-mix(in oklab, var(--surface) 72%, var(--accent) 8%);
+  }
+}
