@@ -7,10 +7,15 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true,
+        type: 'module',
+      },
       includeAssets: ['icons/favicon.jpeg', 'icons/*.png'],
       manifest: {
         name: 'Ramadan Tracker',
         short_name: 'Ramadan',
+        id: '/',
         description: 'Daily 5 checklist, Quran goal, and Suhoor/Iftar times. Privacy-first, offline-ready.',
         theme_color: '#0f172a',
         background_color: '#0f172a',
@@ -18,7 +23,11 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
-        icons: [{ src: '/icons/favicon.jpeg', sizes: '1024x1024', type: 'image/jpeg', purpose: 'any maskable' }],
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/favicon.jpeg', sizes: '1024x1024', type: 'image/jpeg', purpose: 'maskable' },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff2}'],

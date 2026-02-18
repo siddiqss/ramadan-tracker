@@ -18,7 +18,11 @@ function isPast(entry: PrayerTimeEntry): boolean {
 
 export function PrayerTimesCard() {
   const [settings] = useSettings()
-  const { times, loading, error } = usePrayerTimes(new Date(), settings.coordinates)
+  const { times, loading, error } = usePrayerTimes(
+    new Date(),
+    settings.coordinates,
+    settings.calculationMethod
+  )
   const [countdown, setCountdown] = useState('')
   const [nextPrayerName, setNextPrayerName] = useState('')
 

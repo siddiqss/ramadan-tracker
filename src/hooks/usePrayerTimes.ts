@@ -12,7 +12,8 @@ function toDayKey(date: Date): string {
 
 export function usePrayerTimes(
   date: Date,
-  coordinates?: { lat: number; lng: number } | null
+  coordinates?: { lat: number; lng: number } | null,
+  calculationMethod?: string
 ): {
   times: PrayerTimesResult | null
   loading: boolean
@@ -26,7 +27,7 @@ export function usePrayerTimes(
 
   const fetchTimes = useCallback(async () => {
     const current = coordinates ?? getCachedCoordinates()
-    const { calculationMethod } = getSettings()
+    const method = calculationMethod ?? getSettings().calculationMethod
     if (!current) {
       setError('Enable location or choose a city in Settings')
       setTimes(null)
@@ -41,7 +42,7 @@ export function usePrayerTimes(
         dateForDay,
         current.lat,
         current.lng,
-        calculationMethod
+        method
       )
       setTimes(result)
     } catch (e) {
@@ -50,7 +51,7 @@ export function usePrayerTimes(
     } finally {
       setLoading(false)
     }
-  }, [dayKey, coordinates?.lat, coordinates?.lng])
+  }, [dayKey, coordinates?.lat, coordinates?.lng, calculationMethod])
 
   useEffect(() => {
     fetchTimes()

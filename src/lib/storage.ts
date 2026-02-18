@@ -28,6 +28,7 @@ export interface PrayerTimesCache {
   date: string
   lat: number
   lng: number
+  methodId?: string
   fajr: string
   sunrise: string
   maghrib: string

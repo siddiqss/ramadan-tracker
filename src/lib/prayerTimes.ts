@@ -111,8 +111,15 @@ export async function getPrayerTimesForDate(
   methodId?: string
 ): Promise<PrayerTimesResult> {
   const dateKey = date.toISOString().slice(0, 10)
+  const normalizedMethod = methodId ?? 'MuslimWorldLeague'
   const cached = await getPrayerCache(dateKey)
-  if (cached && cached.lat === lat && cached.lng === lng && cached.dhuhr) {
+  if (
+    cached &&
+    cached.lat === lat &&
+    cached.lng === lng &&
+    cached.dhuhr &&
+    (cached.methodId ?? 'MuslimWorldLeague') === normalizedMethod
+  ) {
     const schedule: PrayerTimeEntry[] = [
       { name: 'fajr', label: 'Fajr', time: cached.fajr, date: new Date(cached.fajrDate!) },
       { name: 'sunrise', label: 'Sunrise', time: cached.sunrise, date: new Date(cached.sunriseDate!) },
@@ -138,6 +145,7 @@ export async function getPrayerTimesForDate(
     date: dateKey,
     lat,
     lng,
+    methodId: normalizedMethod,
     fajr: result.fajr,
     sunrise: result.sunrise,
     dhuhr: result.dhuhr,
