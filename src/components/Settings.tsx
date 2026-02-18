@@ -3,6 +3,7 @@ import { useGeolocation } from '../hooks/useGeolocation'
 import { CALCULATION_METHODS } from '../data/constants'
 import { CITIES } from '../data/cities'
 import { useMemo, useState } from 'react'
+import { pushSupport, subscribeRamadanPush, unsubscribeRamadanPush } from '../lib/pushClient'
 
 interface SettingsProps {
   onBack: () => void
@@ -18,6 +19,8 @@ export function Settings({ onBack }: SettingsProps) {
   const [permissionState, setPermissionState] = useState<NotificationPermission>(() =>
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   )
+  const [pushMessage, setPushMessage] = useState<string | null>(null)
+  const [pushBusy, setPushBusy] = useState(false)
 
   const cityOptions = useMemo(() => {
     const q = cityQuery.trim().toLowerCase()
@@ -29,6 +32,7 @@ export function Settings({ onBack }: SettingsProps) {
 
   const displayedCoords = settings.coordinates ?? coords
 
+  const { supported: isPushSupported } = pushSupport()
   const isNotificationSupported =
     typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator
 
@@ -85,6 +89,51 @@ export function Settings({ onBack }: SettingsProps) {
           >
             {permissionState === 'granted' ? 'Notifications enabled' : 'Allow notifications'}
           </button>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <button
+              type="button"
+              className="ui-secondary-btn disabled:opacity-50"
+              disabled={!isPushSupported || pushBusy}
+              onClick={async () => {
+                try {
+                  setPushBusy(true)
+                  setPushMessage(null)
+                  const result = await subscribeRamadanPush(settings)
+                  setPermissionState(Notification.permission)
+                  if (result === 'permission_denied') {
+                    setPushMessage('Notification permission denied.')
+                    return
+                  }
+                  setPushMessage('Push reminder connected.')
+                } catch {
+                  setPushMessage('Push setup failed. Check backend URL/VAPID key.')
+                } finally {
+                  setPushBusy(false)
+                }
+              }}
+            >
+              Connect push
+            </button>
+            <button
+              type="button"
+              className="ui-secondary-btn disabled:opacity-50"
+              disabled={!isPushSupported || pushBusy}
+              onClick={async () => {
+                try {
+                  setPushBusy(true)
+                  await unsubscribeRamadanPush()
+                  setPushMessage('Push reminder disconnected.')
+                } catch {
+                  setPushMessage('Could not disconnect push.')
+                } finally {
+                  setPushBusy(false)
+                }
+              }}
+            >
+              Disconnect push
+            </button>
+          </div>
+          {pushMessage && <p className="text-xs text-[var(--muted)] mt-2">{pushMessage}</p>}
           <p className="text-xs text-[var(--muted)] mt-2">
             Works during Ramadan only, based on your Ramadan start date above.
           </p>

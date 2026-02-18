@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      injectRegister: null,
       registerType: 'autoUpdate',
       devOptions: {
         enabled: true,
@@ -29,9 +33,8 @@ export default defineConfig({
           { src: '/icons/favicon.jpeg', sizes: '1024x1024', type: 'image/jpeg', purpose: 'maskable' },
         ],
       },
-      workbox: {
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff2}'],
-        runtimeCaching: [],
       },
     }),
   ],

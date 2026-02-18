@@ -1,7 +1,17 @@
 {
-    "name": "ramadan-tracker",
-    "compatibility_date": "2026-02-16",
-    "assets": {
-      "directory": "./dist"
+  "name": "ramadan-tracker",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-02-16",
+  "assets": {
+    "directory": "./dist"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "REMINDER_SUBSCRIPTIONS",
+      "id": "6d9c19df7c414a8e983b0c88071cf09d"
     }
+  ],
+  "triggers": {
+    "crons": ["* * * * *"]
   }
+}

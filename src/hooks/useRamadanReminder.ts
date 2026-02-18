@@ -36,6 +36,13 @@ export function useRamadanReminder(settings: Settings) {
   const busyRef = useRef(false)
 
   useEffect(() => {
+    const backendConfigured =
+      typeof import.meta.env.VITE_PUSH_BACKEND_URL === 'string' &&
+      import.meta.env.VITE_PUSH_BACKEND_URL.length > 0 &&
+      typeof import.meta.env.VITE_VAPID_PUBLIC_KEY === 'string' &&
+      import.meta.env.VITE_VAPID_PUBLIC_KEY.length > 0
+    if (backendConfigured) return
+
     const tick = async () => {
       if (busyRef.current) return
       if (!settings.reminderEnabled) return

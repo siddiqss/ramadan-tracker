@@ -36,3 +36,35 @@ npm run preview
 
 - No account, no server. All data stays in the browser (localStorage + IndexedDB).
 - Location is used only to compute prayer times; it is not sent anywhere.
+
+## Push Reminder Backend (Cloudflare Worker)
+
+Daily background reminders are now supported with Web Push.
+
+1. Create KV namespace:
+```bash
+npx wrangler kv namespace create REMINDER_SUBSCRIPTIONS
+```
+Copy the returned namespace id into `wrangler.jsonc` at `kv_namespaces[0].id`.
+
+2. Set Worker secrets:
+```bash
+npx wrangler secret put VAPID_PUBLIC_KEY
+npx wrangler secret put VAPID_PRIVATE_KEY
+npx wrangler secret put PUSH_SUBJECT
+```
+Use `mailto:you@example.com` for `PUSH_SUBJECT`.
+
+3. Configure frontend env:
+```bash
+cp .env.example .env.local
+```
+Set:
+- `VITE_PUSH_BACKEND_URL` to your Worker URL (for example `https://ramadan-tracker.<subdomain>.workers.dev`)
+- `VITE_VAPID_PUBLIC_KEY` to the same public VAPID key
+
+4. Build and deploy:
+```bash
+npm run build
+npx wrangler deploy
+```
