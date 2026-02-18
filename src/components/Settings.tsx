@@ -15,6 +15,9 @@ export function Settings({ onBack }: SettingsProps) {
   const [manualLat, setManualLat] = useState('')
   const [manualLng, setManualLng] = useState('')
   const [manualError, setManualError] = useState<string | null>(null)
+  const [permissionState, setPermissionState] = useState<NotificationPermission>(() =>
+    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
+  )
 
   const cityOptions = useMemo(() => {
     const q = cityQuery.trim().toLowerCase()
@@ -25,6 +28,9 @@ export function Settings({ onBack }: SettingsProps) {
   }, [cityQuery])
 
   const displayedCoords = settings.coordinates ?? coords
+
+  const isNotificationSupported =
+    typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator
 
   return (
     <div className="max-w-xl mx-auto px-4 pb-12 pt-4 min-h-dvh">
@@ -46,6 +52,48 @@ export function Settings({ onBack }: SettingsProps) {
       </header>
 
       <div className="space-y-4">
+        <section className="ui-card">
+          <h2 className="ui-section-title mb-3">Daily reminder</h2>
+          <label className="flex items-center justify-between gap-3">
+            <span className="text-sm">Enable Ramadan reminder</span>
+            <input
+              type="checkbox"
+              checked={Boolean(settings.reminderEnabled)}
+              onChange={(e) => updateSettings({ reminderEnabled: e.target.checked })}
+            />
+          </label>
+
+          <label className="block mt-3">
+            <span className="block text-xs text-[var(--muted)] mb-1">Reminder time</span>
+            <input
+              type="time"
+              value={settings.reminderTime ?? '20:00'}
+              onChange={(e) => updateSettings({ reminderTime: e.target.value })}
+              className="ui-input"
+            />
+          </label>
+
+          <button
+            type="button"
+            className="ui-secondary-btn w-full mt-3 disabled:opacity-50"
+            disabled={!isNotificationSupported}
+            onClick={async () => {
+              if (!isNotificationSupported) return
+              const permission = await Notification.requestPermission()
+              setPermissionState(permission)
+            }}
+          >
+            {permissionState === 'granted' ? 'Notifications enabled' : 'Allow notifications'}
+          </button>
+          <p className="text-xs text-[var(--muted)] mt-2">
+            Works during Ramadan only, based on your Ramadan start date above.
+          </p>
+          <p className="text-xs text-[var(--muted)] mt-2">
+            Best support: Safari/iOS web app (Add to Home Screen) and Chrome/Android web app.
+            Chrome/Firefox on iPhone use WebKit limits and may not support web push.
+          </p>
+        </section>
+
         <section className="ui-card">
           <h2 className="ui-section-title mb-3">Location</h2>
           <button

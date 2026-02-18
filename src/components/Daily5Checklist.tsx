@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useDailyProgress } from '../hooks/useDailyProgress'
 
 const PRAYER_NAMES = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
-const OTHER_ITEMS: { key: 'dhikr' | 'charity' | 'sunnah'; label: string }[] = [
+const OTHER_ITEMS: { key: 'dhikr' | 'charity' | 'sunnah' | 'fasting'; label: string }[] = [
   { key: 'dhikr', label: 'Dhikr' },
   { key: 'charity', label: 'Charity' },
   { key: 'sunnah', label: 'Sunnah' },
+  { key: 'fasting', label: 'Rawdah (Fast)' },
 ]
 
 const QURAN_PRESETS = [5, 10, 20] as const
@@ -20,7 +21,13 @@ export function Daily5Checklist({ onViewAdhkar }: Daily5ChecklistProps) {
   const prayerCount = [0, 1, 2, 3, 4].filter((i) => (progress.prayers & (1 << i)) !== 0).length
   const quranPages = progress.quranPages ?? 0
   const quranDone = quranPages >= dailyQuranTarget
-  const focusDone = (prayerCount === 5 ? 1 : 0) + (quranDone ? 1 : 0) + (progress.dhikr ? 1 : 0) + (progress.charity ? 1 : 0) + (progress.sunnah ? 1 : 0)
+  const focusDone =
+    (prayerCount === 5 ? 1 : 0) +
+    (quranDone ? 1 : 0) +
+    (progress.dhikr ? 1 : 0) +
+    (progress.charity ? 1 : 0) +
+    (progress.sunnah ? 1 : 0) +
+    (progress.fasting ? 1 : 0)
 
   if (loading) {
     return (
@@ -39,7 +46,7 @@ export function Daily5Checklist({ onViewAdhkar }: Daily5ChecklistProps) {
           <p className="mt-1 text-sm text-[var(--muted)]">Tap to mark complete. Saved instantly.</p>
         </div>
         <div className="text-right">
-          <p className="text-xl font-semibold tabular-nums">{focusDone}/5</p>
+          <p className="text-xl font-semibold tabular-nums">{focusDone}/6</p>
           <p className="text-xs text-[var(--muted)]">focus goals</p>
         </div>
       </div>

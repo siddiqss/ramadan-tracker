@@ -12,6 +12,8 @@ export interface Settings {
   ramadanDays?: 29 | 30
   ramadanStartDate?: string
   theme?: 'light' | 'dark' | 'system'
+  reminderEnabled?: boolean
+  reminderTime?: string
 }
 
 export interface DailyProgress {
@@ -22,6 +24,7 @@ export interface DailyProgress {
   dhikr: boolean
   charity: boolean
   sunnah: boolean
+  fasting: boolean
 }
 
 export interface PrayerTimesCache {
@@ -120,10 +123,11 @@ export function getDefaultProgress(date: string): DailyProgress {
     dhikr: false,
     charity: false,
     sunnah: false,
+    fasting: false,
   }
 }
 
-/** Returns completed goal count 0-5: Prayers (1 when all 5 done), Quran, Dhikr, Charity, Sunnah */
+/** Returns completed goal count 0-6: Prayers (1 when all 5 done), Quran, Dhikr, Charity, Sunnah, Fasting */
 export function getProgressDoneCount(progress: DailyProgress): number {
   const prayerComplete = [0, 1, 2, 3, 4].every((i) => (progress.prayers & (1 << i)) !== 0) ? 1 : 0
   return (
@@ -131,6 +135,7 @@ export function getProgressDoneCount(progress: DailyProgress): number {
     (progress.quran ? 1 : 0) +
     (progress.dhikr ? 1 : 0) +
     (progress.charity ? 1 : 0) +
-    (progress.sunnah ? 1 : 0)
+    (progress.sunnah ? 1 : 0) +
+    (progress.fasting ? 1 : 0)
   )
 }

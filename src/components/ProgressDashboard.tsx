@@ -4,10 +4,11 @@ import { computeStats } from '../lib/stats'
 import { useSettings } from '../hooks/useSettings'
 
 const PRAYER_NAMES = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
-const OTHER_ITEMS: { key: 'dhikr' | 'charity' | 'sunnah'; label: string }[] = [
+const OTHER_ITEMS: { key: 'dhikr' | 'charity' | 'sunnah' | 'fasting'; label: string }[] = [
   { key: 'dhikr', label: 'Dhikr' },
   { key: 'charity', label: 'Charity' },
   { key: 'sunnah', label: 'Sunnah' },
+  { key: 'fasting', label: 'Rawdah (Fast)' },
 ]
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -262,7 +263,7 @@ export function ProgressDashboard({ onBack }: ProgressDashboardProps) {
                       className={`aspect-square rounded-md flex items-center justify-center text-xs font-medium transition-transform duration-150 active:scale-95 ${getHeatmapColor(cell.done)} ${
                         cell.done > 0 ? 'text-emerald-900 dark:text-emerald-50' : 'text-[var(--muted)]'
                       }`}
-                      title={`Day ${cell.day}: ${cell.done}/5`}
+                      title={`Day ${cell.day}: ${cell.done}/6`}
                     >
                       {cell.day}
                     </button>
@@ -270,7 +271,7 @@ export function ProgressDashboard({ onBack }: ProgressDashboardProps) {
                 </div>
                 <div className="flex items-center gap-1 mt-3 justify-end">
                   <span className="text-[10px] text-[var(--muted)]">Less</span>
-                  {[0, 1, 2, 3, 4, 5].map((n) => (
+                  {[0, 1, 2, 3, 4, 5, 6].map((n) => (
                     <div key={n} className={`w-3 h-3 rounded-sm ${getHeatmapColor(n)}`} />
                   ))}
                   <span className="text-[10px] text-[var(--muted)]">More</span>

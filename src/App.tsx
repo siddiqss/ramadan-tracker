@@ -9,6 +9,7 @@ import { ProgressDashboard } from './components/ProgressDashboard'
 import { AdhkarScreen } from './components/AdhkarScreen'
 import { LanternBackdrop } from './components/LanternBackdrop'
 import { useSettings } from './hooks/useSettings'
+import { useRamadanReminder } from './hooks/useRamadanReminder'
 
 function applyTheme(theme: 'light' | 'dark' | 'system') {
   const root = document.documentElement
@@ -22,6 +23,7 @@ function applyTheme(theme: 'light' | 'dark' | 'system') {
 
 export default function App() {
   const [settings] = useSettings()
+  useRamadanReminder(settings)
   const [showSettings, setShowSettings] = useState(false)
   const [showTrackedDays, setShowTrackedDays] = useState(false)
   const [showAdhkar, setShowAdhkar] = useState(false)

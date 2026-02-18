@@ -1,7 +1,7 @@
 export const QURAN_PAGES = 604
 export const QURAN_JUZ = 30
 
-export const DAILY_5_ITEMS = ['prayers', 'quran', 'dhikr', 'charity', 'sunnah'] as const
+export const DAILY_5_ITEMS = ['prayers', 'quran', 'dhikr', 'charity', 'sunnah', 'fasting'] as const
 export type Daily5Key = (typeof DAILY_5_ITEMS)[number]
 
 export const RAMADAN_DAYS_OPTIONS = [29, 30] as const

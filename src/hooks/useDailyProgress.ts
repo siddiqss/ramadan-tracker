@@ -3,6 +3,7 @@ import {
   getProgress,
   setProgress,
   getDefaultProgress,
+  subscribeProgress,
   type DailyProgress,
 } from '../lib/storage'
 import { useSettings } from './useSettings'
@@ -41,23 +42,39 @@ export function useDailyProgress(): {
     [settings.targetQuran, settings.ramadanDays]
   )
 
+  const normalizeProgress = useCallback(
+    (base: DailyProgress): DailyProgress => {
+      let normalized = { ...base, quranPages: base.quranPages ?? 0, fasting: base.fasting ?? false }
+      if (base.quran && (base.quranPages == null || base.quranPages === 0)) {
+        normalized = { ...normalized, quranPages: dailyQuranTarget }
+      }
+      return normalized
+    },
+    [dailyQuranTarget]
+  )
+
   useEffect(() => {
     let cancelled = false
     getProgress(dateKey).then((p) => {
       if (!cancelled) {
         const base = p ?? getDefaultProgress(dateKey)
-        let normalized = { ...base, quranPages: base.quranPages ?? 0 }
-        if (base.quran && (base.quranPages == null || base.quranPages === 0)) {
-          normalized = { ...normalized, quranPages: dailyQuranTarget }
-        }
-        setProgressState(normalized)
+        setProgressState(normalizeProgress(base))
         setLoading(false)
       }
     })
     return () => {
       cancelled = true
     }
-  }, [dateKey, dailyQuranTarget])
+  }, [dateKey, normalizeProgress])
+
+  useEffect(() => {
+    return subscribeProgress(() => {
+      getProgress(dateKey).then((p) => {
+        const base = p ?? getDefaultProgress(dateKey)
+        setProgressState(normalizeProgress(base))
+      })
+    })
+  }, [dateKey, normalizeProgress])
 
   const persist = useCallback(
     (next: DailyProgress) => {

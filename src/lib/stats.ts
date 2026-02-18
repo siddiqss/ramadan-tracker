@@ -45,11 +45,11 @@ export function computeStats(allProgress: DailyProgress[], todayKey: string): St
     totalQuranPages += p.quranPages ?? 0
     const done = getProgressDoneCount(p)
     totalCompletedItems += done
-    if (done === 5) perfectDays++
+    if (done === 6) perfectDays++
   }
 
   const totalDays = sorted.length
-  const completionPercent = totalDays > 0 ? Math.round((totalCompletedItems / (totalDays * 5)) * 100) : 0
+  const completionPercent = totalDays > 0 ? Math.round((totalCompletedItems / (totalDays * 6)) * 100) : 0
 
   // Streak calculation: walk backward from today
   let currentStreak = 0
