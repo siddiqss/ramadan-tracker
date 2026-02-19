@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useSettings } from '../hooks/useSettings'
 import { useDailyProgress } from '../hooks/useDailyProgress'
+import { useRolloverDayKey } from '../hooks/useRolloverDayKey'
 import { getRamadanDay } from '../lib/ramadanDay'
 import {
   dailyDuas,
@@ -90,14 +91,15 @@ export function AdhkarScreen({ onBack }: AdhkarScreenProps) {
 
 function DuaOfDayTab() {
   const [settings] = useSettings()
+  const dayKey = useRolloverDayKey()
   const [browseDay, setBrowseDay] = useState<number | null>(null)
 
   const ramadanDay = getRamadanDay(
     settings.ramadanStartDate,
-    new Date(),
+    dayKey,
     settings.ramadanDays
   )
-  const effectiveDay = ramadanDay ?? browseDay
+  const effectiveDay = browseDay ?? ramadanDay
   const dua = effectiveDay ? dailyDuas.find((d) => d.day === effectiveDay) : null
 
   return (
@@ -285,6 +287,11 @@ function TasbeehTab() {
 
         {/* Arabic text */}
         <div className="flex-1 flex flex-col items-center justify-center w-full space-y-3">
+          {phrase.title && (
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)] text-center">
+              {phrase.title}
+            </p>
+          )}
           <p className="text-lg leading-loose text-center font-medium" dir="rtl">
             {phrase.arabic}
           </p>
@@ -296,6 +303,11 @@ function TasbeehTab() {
           <p className="text-xs text-[var(--text)] text-center leading-relaxed">
             {phrase.english}
           </p>
+          {phrase.note && (
+            <p className="text-[11px] text-[var(--muted)] text-center leading-relaxed">
+              {phrase.note}
+            </p>
+          )}
         </div>
 
         {/* Counter circle */}

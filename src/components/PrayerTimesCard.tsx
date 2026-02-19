@@ -21,7 +21,8 @@ export function PrayerTimesCard() {
   const { times, loading, error } = usePrayerTimes(
     new Date(),
     settings.coordinates,
-    settings.calculationMethod
+    settings.calculationMethod,
+    settings.asrJuristic ?? 'shafi'
   )
   const [countdown, setCountdown] = useState('')
   const [nextPrayerName, setNextPrayerName] = useState('')

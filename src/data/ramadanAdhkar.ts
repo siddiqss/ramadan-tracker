@@ -12,9 +12,13 @@ export interface DailyDua {
 }
 
 export interface TasbihatPhrase {
+  id?: string
+  title?: string
   arabic: string
   transliteration?: string
   english: string
+  note?: string
+  sunnah_specific?: boolean
 }
 
 export interface TasbihatPart {
@@ -37,8 +41,56 @@ export interface DuaCategory {
   duas: CategorizedDua[]
 }
 
+export interface AshraDua {
+  id: string
+  title: string
+  arabic: string
+  transliteration: string
+  translation: string
+  note: string
+  sunnah_specific: boolean
+  startDay: number
+  endDay: number
+}
+
 export const ADHKAR_ATTRIBUTION =
   'Authentic prophetic duas and adhkar from Sahih al-Bukhari, Sahih Muslim, and other agreed-upon hadith collections.'
+
+export const ashraDuas: AshraDua[] = [
+  {
+    id: 'ashra_1_mercy',
+    title: '1st Ashra - Mercy',
+    arabic: 'يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ',
+    transliteration: 'Ya Hayyu Ya Qayyum, bi-rahmatika astaghith',
+    translation: 'O Ever-Living, O Sustainer, in Your mercy I seek relief',
+    note: 'Permissible dua. Not established as specific Sunnah for first 10 days.',
+    sunnah_specific: false,
+    startDay: 1,
+    endDay: 10,
+  },
+  {
+    id: 'ashra_2_forgiveness',
+    title: '2nd Ashra - Forgiveness',
+    arabic: 'أَسْتَغْفِرُ ٱللّٰهَ رَبِّي مِنْ كُلِّ ذَنْبٍ وَأَتُوبُ إِلَيْهِ',
+    transliteration: 'Astaghfirullaha rabbi min kulli dhanbin wa atubu ilayh',
+    translation: 'I seek forgiveness from Allah, my Lord, from every sin and repent to Him',
+    note: 'Permissible dua. Not established as specific Sunnah for middle 10 days.',
+    sunnah_specific: false,
+    startDay: 11,
+    endDay: 20,
+  },
+  {
+    id: 'ashra_3_protection',
+    title: '3rd Ashra - Protection from Hellfire',
+    arabic: 'اللَّهُمَّ أَجِرْنِي مِنَ ٱلنَّارِ',
+    transliteration: 'Allahumma ajirni min an-nar',
+    translation: 'O Allah, save me from the Hellfire',
+    note: 'Permissible dua. Not established as specific Sunnah for last 10 days.',
+    sunnah_specific: false,
+    startDay: 21,
+    endDay: 30,
+  },
+]
 
 export const dailyDuas: DailyDua[] = [
   {
@@ -397,6 +449,48 @@ export const dailyTasbihat: TasbihatPart[] = [
         transliteration: 'Allahumma inni as\'alukal \'afiyah',
         english:
           'O Allah, I ask You for wellbeing. The Prophet said: Ask Allah for wellbeing, for after certainty of faith none is given a better gift than wellbeing.',
+      },
+    ],
+  },
+  {
+    part: 11,
+    phrases: [
+      {
+        id: ashraDuas[0].id,
+        title: ashraDuas[0].title,
+        arabic: ashraDuas[0].arabic,
+        transliteration: ashraDuas[0].transliteration,
+        english: ashraDuas[0].translation,
+        note: ashraDuas[0].note,
+        sunnah_specific: ashraDuas[0].sunnah_specific,
+      },
+    ],
+  },
+  {
+    part: 12,
+    phrases: [
+      {
+        id: ashraDuas[1].id,
+        title: ashraDuas[1].title,
+        arabic: ashraDuas[1].arabic,
+        transliteration: ashraDuas[1].transliteration,
+        english: ashraDuas[1].translation,
+        note: ashraDuas[1].note,
+        sunnah_specific: ashraDuas[1].sunnah_specific,
+      },
+    ],
+  },
+  {
+    part: 13,
+    phrases: [
+      {
+        id: ashraDuas[2].id,
+        title: ashraDuas[2].title,
+        arabic: ashraDuas[2].arabic,
+        transliteration: ashraDuas[2].transliteration,
+        english: ashraDuas[2].translation,
+        note: ashraDuas[2].note,
+        sunnah_specific: ashraDuas[2].sunnah_specific,
       },
     ],
   },

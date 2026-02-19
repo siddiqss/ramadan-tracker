@@ -9,10 +9,8 @@ import {
 import { useSettings } from './useSettings'
 import { QURAN_PAGES } from '../data/constants'
 import type { Daily5Key } from '../data/constants'
-
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10)
-}
+import { getRolloverDayKey } from '../lib/dayKey'
+import { useRolloverDayKey } from './useRolloverDayKey'
 
 function computeDailyQuranTarget(targetQuran: 1 | 2 | undefined, ramadanDays: 29 | 30 | undefined): number {
   const target = targetQuran ?? 1
@@ -32,11 +30,11 @@ export function useDailyProgress(): {
 } {
   const [settings] = useSettings()
   const [progress, setProgressState] = useState<DailyProgress>(() =>
-    getDefaultProgress(todayKey())
+    getDefaultProgress(getRolloverDayKey())
   )
   const [loading, setLoading] = useState(true)
 
-  const dateKey = todayKey()
+  const dateKey = useRolloverDayKey()
   const dailyQuranTarget = useMemo(
     () => computeDailyQuranTarget(settings.targetQuran, settings.ramadanDays),
     [settings.targetQuran, settings.ramadanDays]
@@ -55,6 +53,8 @@ export function useDailyProgress(): {
 
   useEffect(() => {
     let cancelled = false
+    setLoading(true)
+    setProgressState(getDefaultProgress(dateKey))
     getProgress(dateKey).then((p) => {
       if (!cancelled) {
         const base = p ?? getDefaultProgress(dateKey)

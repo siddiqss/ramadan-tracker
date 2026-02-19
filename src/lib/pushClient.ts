@@ -80,10 +80,11 @@ export async function unsubscribeRamadanPush(): Promise<void> {
   if (!existing) return
 
   const endpoint = existing.endpoint
-  await fetch(`${backend}/api/push/unsubscribe`, {
+  const res = await fetch(`${backend}/api/push/unsubscribe`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ endpoint }),
   })
+  if (!res.ok) throw new Error(`Unsubscribe failed: ${res.status}`)
   await existing.unsubscribe()
 }

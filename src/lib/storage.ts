@@ -8,6 +8,8 @@ const STORE_PRAYER_CACHE = 'prayerCache'
 export interface Settings {
   coordinates?: { lat: number; lng: number }
   calculationMethod?: string
+  asrJuristic?: 'shafi' | 'hanafi'
+  onboardingSeen?: boolean
   targetQuran?: 1 | 2
   ramadanDays?: 29 | 30
   ramadanStartDate?: string

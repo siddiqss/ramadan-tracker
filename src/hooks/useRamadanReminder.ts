@@ -15,8 +15,8 @@ function parseTime(value: string | undefined): { hour: number; minute: number } 
 }
 
 async function notifyReminder() {
-  const title = 'Ramadan Tracker'
-  const body = 'Daily reminder: track your Ramadan goals for today.'
+  const title = 'Daily check-in'
+  const body = 'Take one minute to update your Ramadan goals for today.'
 
   if ('serviceWorker' in navigator) {
     const reg = await navigator.serviceWorker.ready

@@ -13,8 +13,8 @@ precacheAndRoute(self.__WB_MANIFEST)
 
 self.addEventListener('push', (event) => {
   event.waitUntil(
-    self.registration.showNotification('Ramadan Tracker', {
-      body: 'Daily reminder: track your Ramadan goals for today.',
+    self.registration.showNotification('Daily check-in', {
+      body: 'Take one minute to update your Ramadan goals for today.',
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
       tag: 'ramadan-daily-reminder',

@@ -42,6 +42,9 @@ export default {
     if (url.pathname === '/api/push/unsubscribe' && request.method === 'POST') {
       return withCors(request, await handleUnsubscribe(request, env))
     }
+    if (url.pathname === '/api/push/test-send' && request.method === 'POST') {
+      return withCors(request, await handleTestSend(request, env))
+    }
     if (request.method === 'OPTIONS' && url.pathname.startsWith('/api/')) {
       return withCors(request, new Response(null, { status: 204 }))
     }
@@ -95,6 +98,23 @@ async function handleUnsubscribe(request: Request, env: Env): Promise<Response> 
   return json({ ok: true })
 }
 
+async function handleTestSend(request: Request, env: Env): Promise<Response> {
+  let body: { endpoint?: string }
+  try {
+    body = (await request.json()) as { endpoint?: string }
+  } catch {
+    return json({ error: 'Invalid JSON body.' }, 400)
+  }
+  if (!body.endpoint) return json({ error: 'Missing endpoint.' }, 400)
+  try {
+    const result = await sendWebPush(body.endpoint, env)
+    return json(result, result.ok ? 200 : 502)
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e)
+    return json({ ok: false, error: message }, 500)
+  }
+}
+
 function withCors(request: Request, response: Response): Response {
   const origin = request.headers.get('origin') || '*'
   const headers = new Headers(response.headers)
@@ -139,6 +159,10 @@ function hhmmInTimezone(timezone: string, now = new Date()): string {
   return formatter.format(now)
 }
 
+function isDueNow(nowHHMM: string, reminderHHMM: string): boolean {
+  return nowHHMM >= reminderHHMM
+}
+
 function ramadanDay(startDate: string | null, todayYmd: string, days: 29 | 30): number | null {
   if (!startDate) return null
   const start = new Date(`${startDate}T12:00:00Z`)
@@ -170,7 +194,9 @@ async function handleDueSubscription(env: Env, key: string): Promise<void> {
 
   const today = todayInTimezone(sub.timezone)
   if (sub.lastSentDate === today) return
-  if (hhmmInTimezone(sub.timezone) !== normalizeTime(sub.reminderTime)) return
+  const nowHHMM = hhmmInTimezone(sub.timezone)
+  const reminderHHMM = normalizeTime(sub.reminderTime)
+  if (!isDueNow(nowHHMM, reminderHHMM)) return
   if (!ramadanDay(sub.ramadanStartDate, today, sub.ramadanDays)) return
 
   const sent = await sendWebPush(sub.endpoint, env)
@@ -185,7 +211,10 @@ async function handleDueSubscription(env: Env, key: string): Promise<void> {
   await env.REMINDER_SUBSCRIPTIONS.put(key, JSON.stringify(sub))
 }
 
-async function sendWebPush(endpoint: string, env: Env): Promise<{ ok: boolean; status: number }> {
+async function sendWebPush(
+  endpoint: string,
+  env: Env
+): Promise<{ ok: boolean; status: number; responseText?: string }> {
   const aud = new URL(endpoint).origin
   const nowSec = Math.floor(Date.now() / 1000)
   const jwt = await createVapidJwt(
@@ -201,10 +230,12 @@ async function sendWebPush(endpoint: string, env: Env): Promise<{ ok: boolean; s
     headers: {
       TTL: '300',
       Urgency: 'normal',
-      Authorization: `vapid t=${jwt}, k=${env.VAPID_PUBLIC_KEY}`,
+      Authorization: `WebPush ${jwt}`,
+      'Crypto-Key': `p256ecdsa=${env.VAPID_PUBLIC_KEY}`,
     },
   })
-  return { ok: res.ok, status: res.status }
+  const responseText = await res.text()
+  return { ok: res.ok, status: res.status, responseText }
 }
 
 async function createVapidJwt(
@@ -280,6 +311,8 @@ function b64UrlDecode(value: string): Uint8Array {
 }
 
 function derToJose(der: Uint8Array, partLen: number): Uint8Array {
+  // In Workers runtime, ECDSA signatures may already be raw JOSE format (r|s).
+  if (der.length === partLen * 2) return der
   if (der[0] !== 0x30) throw new Error('Invalid DER signature.')
   let offset = 2
   if (der[1] > 0x80) offset += der[1] - 0x80

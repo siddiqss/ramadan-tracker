@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { getPrayerTimesForDate, type PrayerTimesResult } from '../lib/prayerTimes'
 import { getCachedCoordinates } from '../lib/geo'
 import { getSettings } from '../lib/storage'
+import type { AsrJuristicMethod } from '../data/constants'
 
 function toDayKey(date: Date): string {
   const y = date.getFullYear()
@@ -13,7 +14,8 @@ function toDayKey(date: Date): string {
 export function usePrayerTimes(
   date: Date,
   coordinates?: { lat: number; lng: number } | null,
-  calculationMethod?: string
+  calculationMethod?: string,
+  asrJuristic: AsrJuristicMethod = 'shafi'
 ): {
   times: PrayerTimesResult | null
   loading: boolean
@@ -27,7 +29,9 @@ export function usePrayerTimes(
 
   const fetchTimes = useCallback(async () => {
     const current = coordinates ?? getCachedCoordinates()
-    const method = calculationMethod ?? getSettings().calculationMethod
+    const settings = getSettings()
+    const method = calculationMethod ?? settings.calculationMethod
+    const asr = asrJuristic ?? settings.asrJuristic ?? 'shafi'
     if (!current) {
       setError('Enable location or choose a city in Settings')
       setTimes(null)
@@ -42,7 +46,8 @@ export function usePrayerTimes(
         dateForDay,
         current.lat,
         current.lng,
-        method
+        method,
+        asr
       )
       setTimes(result)
     } catch (e) {
@@ -51,7 +56,7 @@ export function usePrayerTimes(
     } finally {
       setLoading(false)
     }
-  }, [dayKey, coordinates?.lat, coordinates?.lng, calculationMethod])
+  }, [dayKey, coordinates?.lat, coordinates?.lng, calculationMethod, asrJuristic])
 
   useEffect(() => {
     fetchTimes()

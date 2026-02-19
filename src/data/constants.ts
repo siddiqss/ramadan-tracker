@@ -26,3 +26,10 @@ export const CALCULATION_METHODS = [
 ] as const
 
 export type CalculationMethodId = (typeof CALCULATION_METHODS)[number]['id']
+
+export const ASR_JURISTIC_METHODS = [
+  { id: 'shafi', label: 'Standard (Shafi/Maliki/Hanbali)' },
+  { id: 'hanafi', label: 'Hanafi' },
+] as const
+
+export type AsrJuristicMethod = (typeof ASR_JURISTIC_METHODS)[number]['id']

@@ -1,9 +1,10 @@
 import { useSettings } from '../hooks/useSettings'
 import { useGeolocation } from '../hooks/useGeolocation'
-import { CALCULATION_METHODS } from '../data/constants'
+import { CALCULATION_METHODS, ASR_JURISTIC_METHODS } from '../data/constants'
 import { CITIES } from '../data/cities'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { pushSupport, subscribeRamadanPush, unsubscribeRamadanPush } from '../lib/pushClient'
+import { getRamadanStartSuggestion } from '../lib/ramadanStart'
 
 interface SettingsProps {
   onBack: () => void
@@ -16,9 +17,6 @@ export function Settings({ onBack }: SettingsProps) {
   const [manualLat, setManualLat] = useState('')
   const [manualLng, setManualLng] = useState('')
   const [manualError, setManualError] = useState<string | null>(null)
-  const [permissionState, setPermissionState] = useState<NotificationPermission>(() =>
-    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
-  )
   const [pushMessage, setPushMessage] = useState<string | null>(null)
   const [pushBusy, setPushBusy] = useState(false)
 
@@ -31,6 +29,14 @@ export function Settings({ onBack }: SettingsProps) {
   }, [cityQuery])
 
   const displayedCoords = settings.coordinates ?? coords
+  const displayedMethod = settings.calculationMethod ?? 'MuslimWorldLeague'
+  const ramadanSuggestion = useMemo(() => getRamadanStartSuggestion(), [])
+
+  useEffect(() => {
+    if (!settings.ramadanStartDate && ramadanSuggestion) {
+      updateSettings({ ramadanStartDate: ramadanSuggestion.startDate })
+    }
+  }, [settings.ramadanStartDate, ramadanSuggestion, updateSettings])
 
   const { supported: isPushSupported } = pushSupport()
   const isNotificationSupported =
@@ -83,11 +89,10 @@ export function Settings({ onBack }: SettingsProps) {
             disabled={!isNotificationSupported}
             onClick={async () => {
               if (!isNotificationSupported) return
-              const permission = await Notification.requestPermission()
-              setPermissionState(permission)
+              await Notification.requestPermission()
             }}
           >
-            {permissionState === 'granted' ? 'Notifications enabled' : 'Allow notifications'}
+            Allow notifications
           </button>
           <div className="grid grid-cols-2 gap-2 mt-2">
             <button
@@ -99,14 +104,14 @@ export function Settings({ onBack }: SettingsProps) {
                   setPushBusy(true)
                   setPushMessage(null)
                   const result = await subscribeRamadanPush(settings)
-                  setPermissionState(Notification.permission)
                   if (result === 'permission_denied') {
                     setPushMessage('Notification permission denied.')
                     return
                   }
                   setPushMessage('Push reminder connected.')
-                } catch {
-                  setPushMessage('Push setup failed. Check backend URL/VAPID key.')
+                } catch (e) {
+                  const message = e instanceof Error ? e.message : String(e)
+                  setPushMessage(`Push setup failed: ${message}`)
                 } finally {
                   setPushBusy(false)
                 }
@@ -123,8 +128,9 @@ export function Settings({ onBack }: SettingsProps) {
                   setPushBusy(true)
                   await unsubscribeRamadanPush()
                   setPushMessage('Push reminder disconnected.')
-                } catch {
-                  setPushMessage('Could not disconnect push.')
+                } catch (e) {
+                  const message = e instanceof Error ? e.message : String(e)
+                  setPushMessage(`Could not disconnect push: ${message}`)
                 } finally {
                   setPushBusy(false)
                 }
@@ -245,9 +251,30 @@ export function Settings({ onBack }: SettingsProps) {
         </section>
 
         <section className="ui-card">
+          <h2 className="ui-section-title mb-3">Prayer jurisprudence</h2>
+          <label className="block">
+            <span className="block text-xs text-[var(--muted)] mb-1">Asr method</span>
+            <select
+              value={settings.asrJuristic ?? 'shafi'}
+              onChange={(e) => updateSettings({ asrJuristic: e.target.value as 'shafi' | 'hanafi' })}
+              className="ui-input"
+            >
+              {ASR_JURISTIC_METHODS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="text-xs text-[var(--muted)] mt-2">
+            Use the same Asr method your local mosque follows.
+          </p>
+        </section>
+
+        <section className="ui-card">
           <h2 className="ui-section-title mb-3">Prayer time method</h2>
           <select
-            value={settings.calculationMethod ?? 'MuslimWorldLeague'}
+            value={displayedMethod}
             onChange={(e) => updateSettings({ calculationMethod: e.target.value || undefined })}
             className="ui-input"
           >
@@ -261,6 +288,20 @@ export function Settings({ onBack }: SettingsProps) {
 
         <section className="ui-card">
           <h2 className="ui-section-title mb-3">Ramadan</h2>
+          {ramadanSuggestion && (
+            <div className="rounded-xl border border-white/10 bg-black/10 p-3 mb-3">
+              <p className="text-xs text-[var(--muted)]">
+                Detected: {ramadanSuggestion.countryLabel}. Suggested start date: {ramadanSuggestion.startDate}.
+              </p>
+              <button
+                type="button"
+                className="ui-secondary-btn mt-2"
+                onClick={() => updateSettings({ ramadanStartDate: ramadanSuggestion.startDate })}
+              >
+                Use suggested date
+              </button>
+            </div>
+          )}
           <label className="block">
             <span className="block text-xs text-[var(--muted)] mb-1">Start date (for daily dua)</span>
             <input
@@ -274,6 +315,9 @@ export function Settings({ onBack }: SettingsProps) {
           </label>
           <p className="text-xs text-[var(--muted)] mt-2">
             Set the first day of Ramadan to show today&apos;s dua in Adhkar.
+          </p>
+          <p className="text-xs text-[var(--muted)] mt-2">
+            Moon-sighting can differ by country/city, so you can always adjust this date manually.
           </p>
         </section>
 

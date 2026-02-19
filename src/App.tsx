@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { PrayerTimesCard } from './components/PrayerTimesCard'
+import { AshraDuaCard } from './components/AshraDuaCard'
+import { SetupRequiredCard } from './components/SetupRequiredCard'
+import { OnboardingWizard } from './components/OnboardingWizard'
 import { Daily5Checklist } from './components/Daily5Checklist'
 import { QuranJourney } from './components/QuranJourney'
 import { ShareButton } from './components/ShareButton'
@@ -10,6 +13,7 @@ import { AdhkarScreen } from './components/AdhkarScreen'
 import { LanternBackdrop } from './components/LanternBackdrop'
 import { useSettings } from './hooks/useSettings'
 import { useRamadanReminder } from './hooks/useRamadanReminder'
+import type { Settings as AppSettings } from './lib/storage'
 
 function applyTheme(theme: 'light' | 'dark' | 'system') {
   const root = document.documentElement
@@ -21,12 +25,23 @@ function applyTheme(theme: 'light' | 'dark' | 'system') {
   }
 }
 
+function getMissingSetupItems(settings: AppSettings): string[] {
+  const missing: string[] = []
+  if (!settings.coordinates) missing.push('Location')
+  if (!settings.calculationMethod) missing.push('Prayer time method')
+  if (!settings.asrJuristic) missing.push('Asr method')
+  if (!settings.ramadanStartDate) missing.push('Ramadan start date')
+  return missing
+}
+
 export default function App() {
   const [settings] = useSettings()
   useRamadanReminder(settings)
   const [showSettings, setShowSettings] = useState(false)
   const [showTrackedDays, setShowTrackedDays] = useState(false)
   const [showAdhkar, setShowAdhkar] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const missingSetupItems = getMissingSetupItems(settings)
 
   useEffect(() => {
     applyTheme(settings.theme ?? 'system')
@@ -40,6 +55,12 @@ export default function App() {
     mq.addEventListener('change', listener)
     return () => mq.removeEventListener('change', listener)
   }, [settings.theme])
+
+  useEffect(() => {
+    if (!settings.onboardingSeen && !showSettings && !showTrackedDays && !showAdhkar) {
+      setShowOnboarding(true)
+    }
+  }, [settings.onboardingSeen, showSettings, showTrackedDays, showAdhkar])
 
   let content
   if (showSettings) {
@@ -96,7 +117,13 @@ export default function App() {
       </header>
 
       <main className="flex-1 space-y-4 overflow-auto">
+        <SetupRequiredCard
+          missingItems={missingSetupItems}
+          onQuickSetup={() => setShowOnboarding(true)}
+          onOpenSettings={() => setShowSettings(true)}
+        />
         <PrayerTimesCard />
+        <AshraDuaCard />
         <Daily5Checklist onViewAdhkar={() => setShowAdhkar(true)} />
         <QuranJourney />
         <ShareButton />
@@ -110,6 +137,9 @@ export default function App() {
     <div className="relative min-h-dvh">
       <LanternBackdrop />
       <div className="relative z-[1]">{content}</div>
+      {showOnboarding && !showSettings && !showTrackedDays && !showAdhkar && (
+        <OnboardingWizard onClose={() => setShowOnboarding(false)} />
+      )}
     </div>
   )
 }

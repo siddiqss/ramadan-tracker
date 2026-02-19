@@ -5,6 +5,7 @@ import {
   Madhab,
 } from 'adhan'
 import { getPrayerCache, setPrayerCache, type PrayerTimesCache } from './storage'
+import type { AsrJuristicMethod } from '../data/constants'
 
 type Params = ReturnType<typeof CalculationMethod.MuslimWorldLeague>
 const METHOD_MAP: Record<string, () => Params> = {
@@ -22,11 +23,19 @@ const METHOD_MAP: Record<string, () => Params> = {
   NorthAmerica: () => CalculationMethod.NorthAmerica(),
 }
 
-function getParams(methodId?: string): Params {
-  const key = methodId && METHOD_MAP[methodId] ? methodId : 'MuslimWorldLeague'
+function resolveMethodId(methodId: string | undefined): string {
+  if (methodId && METHOD_MAP[methodId]) return methodId
+  return 'MuslimWorldLeague'
+}
+
+function getParams(
+  methodId?: string,
+  asrJuristic: AsrJuristicMethod = 'shafi'
+): { params: Params; resolvedMethodId: string } {
+  const key = resolveMethodId(methodId)
   const params = METHOD_MAP[key]()
-  params.madhab = Madhab.Shafi
-  return params
+  params.madhab = asrJuristic === 'hanafi' ? Madhab.Hanafi : Madhab.Shafi
+  return { params, resolvedMethodId: key }
 }
 
 function formatTime(date: Date): string {
@@ -62,10 +71,11 @@ export function computePrayerTimes(
   lat: number,
   lng: number,
   date: Date,
-  methodId?: string
+  methodId?: string,
+  asrJuristic: AsrJuristicMethod = 'shafi'
 ): PrayerTimesResult {
   const coords = new Coordinates(lat, lng)
-  const params = getParams(methodId)
+  const { params } = getParams(methodId, asrJuristic)
   const pt = new PrayerTimes(coords, date, params)
 
   const schedule: PrayerTimeEntry[] = [
@@ -108,10 +118,12 @@ export async function getPrayerTimesForDate(
   date: Date,
   lat: number,
   lng: number,
-  methodId?: string
+  methodId?: string,
+  asrJuristic: AsrJuristicMethod = 'shafi'
 ): Promise<PrayerTimesResult> {
   const dateKey = date.toISOString().slice(0, 10)
-  const normalizedMethod = methodId ?? 'MuslimWorldLeague'
+  const { resolvedMethodId } = getParams(methodId, asrJuristic)
+  const normalizedMethod = `${resolvedMethodId}__${asrJuristic}`
   const cached = await getPrayerCache(dateKey)
   if (
     cached &&
@@ -140,7 +152,7 @@ export async function getPrayerTimesForDate(
       schedule,
     }
   }
-  const result = computePrayerTimes(lat, lng, date, methodId)
+  const result = computePrayerTimes(lat, lng, date, methodId, asrJuristic)
   const cache: PrayerTimesCache = {
     date: dateKey,
     lat,
